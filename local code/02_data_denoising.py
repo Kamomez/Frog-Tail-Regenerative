@@ -1,6 +1,4 @@
-
 #Methods: MAGIC, ALRA, DCA, kNN-smoothing
-
 import time
 from pathlib import Path
 import numpy as np
@@ -10,8 +8,6 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
 
 def main():
-    print("=== Frog Tail Regeneration Analysis - 2. Data Denoising Techniques Comparison ===")
-
     # Create necessary directories
     Path("results").mkdir(exist_ok=True)
     Path("figures").mkdir(exist_ok=True)
