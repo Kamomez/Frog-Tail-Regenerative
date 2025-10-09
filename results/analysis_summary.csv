@@ -1,0 +1,6 @@
+analysis_type,completed,output_files
+roc_cluster_identification,True,"results/roc_markers_logistic.csv, results/roc_markers_wilcoxon.csv"
+marker_gene_logistic,True,results/roc_markers_logistic.csv
+marker_gene_wilcoxon,True,results/roc_markers_wilcoxon.csv
+go_enrichment,False,results/go_enrichment_results.csv
+heatmap_visualization,False,figures/roc_marker_heatmap.png
