@@ -17,8 +17,11 @@ Dataset cleaned_processed_frogtail.h5ad available to download from the journal w
 
 #### run local file step by step (Recommended)
 local code/01_data_preprocessing.py
+
 local code/02_data_denoising.py
+
 local code/03_batch_correction_clustering.py
+
 local code/04_biomarker_analysis.py
 
 #### run local ipynb
