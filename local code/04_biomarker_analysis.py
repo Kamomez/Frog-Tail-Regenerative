@@ -97,12 +97,13 @@ def main():
     # Check batch information
     batch_key = 'DaysPostAmputation' if 'DaysPostAmputation' in adata_hvg.obs.columns else None
 
-    # 4.1 Identify potential ROC clusters
+    # 4.1 Identify potential ROC clusters (with leiden+kmeans support)
     print("\n4.1 Identify potential ROC clusters")
 
     potential_roc_clusters = {}
 
-    for method in ["kmeans"]:
+    # Support both leiden and kmeans - automatically select the best one
+    for method in ["leiden", "kmeans"]:
         cluster_key = f"{method}"
         if cluster_key in adata_hvg.obs:
             print(f"Analyzing {method.upper()} clustering results:")
@@ -123,19 +124,44 @@ def main():
 
     print(f"Potential ROC clusters summary: {potential_roc_clusters}")
 
+    # Select the best ROC cluster (highest early enrichment)
+    best_roc_key = None
+    best_enrichment = 0
+    best_roc_cluster = None
+
+    if potential_roc_clusters:
+        for roc_key, clusters in potential_roc_clusters.items():
+            dataset_name, method = roc_key.rsplit('_', 1)
+            cluster_key = f"{method}"
+            
+            if cluster_key in adata_hvg.obs and batch_key in adata_hvg.obs.columns:
+                cluster_time_dist = pd.crosstab(adata_hvg.obs[cluster_key], adata_hvg.obs[batch_key], normalize='index')
+                early_timepoints = cluster_time_dist.columns[:2]
+                early_enrichment = cluster_time_dist[early_timepoints].sum(axis=1)
+                
+                for cluster in clusters:
+                    enrichment = early_enrichment.loc[cluster]
+                    if enrichment > best_enrichment:
+                        best_enrichment = enrichment
+                        best_roc_key = roc_key
+                        best_roc_cluster = cluster
+        
+        if best_roc_key:
+            print(f"\n✅ Best ROC cluster selected: {best_roc_cluster} from {best_roc_key}")
+            print(f"   Early enrichment: {best_enrichment:.1%}")
+
     # 4.2 Marker gene identification
     print("\n4.2 Marker gene identification")
 
     cluster_key = "kmeans"  # Default to kmeans clustering
 
-    if potential_roc_clusters:
-        roc_cluster_key = list(potential_roc_clusters.keys())[0]
-        dataset_name, method = roc_cluster_key.split('_', 1)
+    if best_roc_cluster:
+        dataset_name, method = best_roc_key.rsplit('_', 1)
         cluster_key = f"{method}"
 
         if cluster_key in adata_hvg.obs:
-            roc_cluster = potential_roc_clusters[roc_cluster_key][0]
-            print(f"Selected ROC cluster: {roc_cluster} (from {roc_cluster_key})")
+            roc_cluster = best_roc_cluster
+            print(f"Selected ROC cluster: {roc_cluster} (from {best_roc_key})")
 
             # Logistic regression
             print("Using Logistic regression to identify marker genes...")
@@ -205,7 +231,7 @@ def main():
         print("Creating heatmap...")
         try:
             sc.pl.rank_genes_groups_heatmap(adata_hvg, key="rank_genes_clusters", n_genes=10,
-                                          show_gene_labels=True, show=False, swap_axes=True, figsize=(8, 12))
+                                          show_gene_labels=True, show=False, swap_axes=True, figsize=(8, 20))
             plt.savefig('figures/marker_genes_heatmap.png', dpi=300, bbox_inches='tight')
             plt.close()
             print("Heatmap saved to figures/marker_genes_heatmap.png")
@@ -236,6 +262,80 @@ def main():
             'overlapping_gene': list(overlap)
         })
         overlap_df.to_csv("results/marker_overlap_summary.csv", index=False)
+
+    # 4.3.1 Cross-method marker gene validation
+    print("\n4.3.1 Cross-method marker gene validation")
+
+    if 'markers_logistic' in locals() and 'markers_wilcoxon' in locals():
+        # Get top genes from each method
+        top_logistic = set(markers_logistic.head(50)['gene'].tolist())
+        top_wilcoxon = set(markers_wilcoxon.head(50)['gene'].tolist())
+        
+        # Find overlap
+        common_markers = top_logistic & top_wilcoxon
+        
+        print(f"\nMarker gene comparison:")
+        print(f"  Logistic regression (top 50): {len(top_logistic)} genes")
+        print(f"  Wilcoxon test (top 50): {len(top_wilcoxon)} genes")
+        print(f"  Common markers: {len(common_markers)} genes")
+        print(f"  Overlap percentage: {len(common_markers)/50*100:.1f}%")
+        
+        if common_markers:
+            print(f"\nHigh-confidence markers (validated by both methods):")
+            # Get details for common markers
+            common_markers_list = sorted(list(common_markers))
+            for i, gene in enumerate(common_markers_list[:10], 1):  # Show top 10
+                logistic_rank = markers_logistic[markers_logistic['gene'] == gene].index[0] + 1
+                wilcoxon_rank = markers_wilcoxon[markers_wilcoxon['gene'] == gene].index[0] + 1
+                logistic_score = markers_logistic[markers_logistic['gene'] == gene]['importance'].values[0]
+                print(f"  {i}. {gene}")
+                print(f"     - Logistic: rank #{logistic_rank}, score={logistic_score:.3f}")
+                print(f"     - Wilcoxon: rank #{wilcoxon_rank}")
+            
+            # Save common markers
+            common_markers_df = pd.DataFrame({
+                'gene': list(common_markers),
+                'method': 'both'
+            })
+            common_markers_df.to_csv("results/common_markers_validated.csv", index=False)
+            print(f"\nCommon markers saved to: results/common_markers_validated.csv")
+            
+            # Create bar chart comparing methods
+            fig, ax = plt.subplots(figsize=(10, 6))
+            
+            comparison_data = pd.DataFrame({
+                'Method': ['Logistic\nOnly', 'Both\nMethods', 'Wilcoxon\nOnly'],
+                'Count': [
+                    len(top_logistic - common_markers),
+                    len(common_markers),
+                    len(top_wilcoxon - common_markers)
+                ],
+                'Color': ['#377eb8', '#4daf4a', '#e41a1c']
+            })
+            
+            bars = ax.bar(comparison_data['Method'], comparison_data['Count'], 
+                         color=comparison_data['Color'], edgecolor='black', linewidth=1.5, alpha=0.8)
+            
+            ax.set_ylabel('Number of Marker Genes', fontsize=12, fontweight='bold')
+            ax.set_title('Marker Gene Identification - Method Comparison', fontsize=14, fontweight='bold', pad=20)
+            ax.grid(True, alpha=0.3, axis='y')
+            
+            # Add value labels on bars
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height,
+                       f'{int(height)}',
+                       ha='center', va='bottom', fontweight='bold', fontsize=12)
+            
+            plt.tight_layout()
+            plt.savefig('figures/marker_method_comparison.png', dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            print("Method comparison plot saved to: figures/marker_method_comparison.png")
+        else:
+            print("No common markers found between methods")
+    else:
+        print("Marker genes not yet identified, skipping validation")
 
     # 4.4 ROC marker genes heatmap visualization
     print("\n4.4 ROC marker genes heatmap visualization")
