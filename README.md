@@ -3,8 +3,11 @@
 Single-cell RNA-seq analysis for identifying the Regenerative Organizing Cell (ROC) in the Xenopus tail.
 
 Reference Papers:
+
 https://www.science.org/doi/full/10.1126/science.aav9996
+
 https://www.nature.com/articles/s41587-025-02694-w
+
 https://www.science.org/action/downloadSupplement?doi=10.1126%2Fscience.aav9996&file=aav9996_aztekin_sm.pdf
 
 ---
