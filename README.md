@@ -15,6 +15,8 @@ https://www.science.org/action/downloadSupplement?doi=10.1126%2Fscience.aav9996&
 ## Start
 Dataset cleaned_processed_frogtail.h5ad available to download from the journal website
 
+recommend to pip install requirement.txt first
+
 #### run local file step by step (Recommended)
 local code/01_data_preprocessing.py
 
@@ -26,6 +28,9 @@ local code/04_biomarker_analysis.py
 
 #### run local ipynb
 local code/frog_tail_analysis_local.ipynb
+
+#### run colab ipynb
+colab code/frog_tail_analysis_colab.ipynb
 
 
 ---
