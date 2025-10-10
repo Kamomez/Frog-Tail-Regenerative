@@ -86,11 +86,11 @@ colab code/frog_tail_analysis_colab.ipynb
 
 ## Clustering Quality
 
-| Method | Denoising | Batch Correction | Silhouette | ARI | Clusters |
-|--------|-----------|------------------|------------|-----|----------|
-| **Best Quality** | MAGIC | Scanorama | **0.485** | 0.486 | 12 |
-| Baseline | - | Harmony | 0.451 | 0.512 | 12 |
-| Standard | MAGIC | - | 0.461 | 0.546 | 12 |
-| Baseline | - | BBKNN | 0.451 | 0.512 | 12 |
-| Standard | ALRA | - | 0.451 | 0.480 | 12 |
-| **Fastest** | - | Linear Regression | 0.419 | 0.523 | 12 |
+| Method | Denoising | Batch Correction | Silhouette | ARI |
+|--------|-----------|------------------|------------|-----|
+| **Best Quality** | MAGIC | Scanorama | **0.485** | 0.486 |
+| Baseline | - | Harmony | 0.451 | 0.512 |
+| Standard | MAGIC | - | 0.461 | 0.546 |
+| Baseline | - | BBKNN | 0.451 | 0.512 |
+| Standard | ALRA | - | 0.451 | 0.480 |
+| **Fastest** | - | Linear Regression | 0.419 | 0.523 |
