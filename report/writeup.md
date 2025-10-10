@@ -212,6 +212,8 @@ Complementary analysis using Wilcoxon rank-sum test identified genes with highly
 - **Immunity**: Intelectin (itln1.L) involved in innate immune recognition
 - **Signaling**: Somatostatin (sst.L) for intercellular communication
 
+**Comparison with Original Study**: Comparative analysis with Supplementary Table 3 from Aztekin et al. (2019) revealed minimal overlap in exact gene identifiers. This discrepancy likely results from: (1) different clustering resolutions identifying ROCs, (2) methodological differences in marker selection (logistic regression vs. traditional differential expression).
+
 ## Conclusion
 
 This comprehensive study successfully identified and characterized Regenerative Organizing Cells (ROCs) in Xenopus tadpole tail regeneration through systematic application of modern single-cell RNA sequencing analysis techniques. The identification of cluster 2 as the ROC population, with exceptional 99.8% enrichment in early regeneration time points (0-1 days post-amputation), validates the effectiveness of our computational approach and aligns with key findings from the original Aztekin et al. (2019) publication.
