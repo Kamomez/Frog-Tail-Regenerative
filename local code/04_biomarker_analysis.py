@@ -147,7 +147,7 @@ def main():
                         best_roc_cluster = cluster
         
         if best_roc_key:
-            print(f"\n✅ Best ROC cluster selected: {best_roc_cluster} from {best_roc_key}")
+            print(f"   Best ROC cluster selected: {best_roc_cluster} from {best_roc_key}")
             print(f"   Early enrichment: {best_enrichment:.1%}")
 
     # 4.2 Marker gene identification
